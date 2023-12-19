@@ -6,9 +6,9 @@ mod gaussian_process;
 mod parameters;
 
 use crate::gaussian_process::GaussianProcess;
+use chrono::Duration;
 
-fn main()
-{
+fn main() {
     {
         // Trains a gaussian process on a dataset of one dimension vectors.
         let training_inputs = vec![vec![0.8], vec![1.2], vec![3.8], vec![4.2]];
@@ -32,9 +32,15 @@ fn main()
         let fit_kernel = true;
         let max_iter = 100;
         let convergence_fraction = 0.05;
-        let max_time = std::time::Duration::from_secs(3600);
+        let max_time = Duration::seconds(3600);
         gp.add_samples(&additional_inputs, &additional_outputs);
-        gp.fit_parameters(fit_prior, fit_kernel, max_iter, convergence_fraction, max_time);
+        gp.fit_parameters(
+            fit_prior,
+            fit_kernel,
+            max_iter,
+            convergence_fraction,
+            max_time,
+        );
         println!("model is now updated.");
 
         // Makes several prediction.
@@ -46,15 +52,19 @@ fn main()
         let new_inputs = vec![vec![1.0], vec![2.0]];
         let sampler = gp.sample_at(&new_inputs);
         let mut rng = rand::thread_rng();
-        for i in 1..=5
-        {
+        for i in 1..=5 {
             println!("sample {} : {:?}", i, sampler.sample(&mut rng));
         }
     }
 
     {
         // Trains a gaussian process on a dataset.
-        let training_inputs = vec![vec![0.8, 0.1], vec![1.2, 0.2], vec![3.8, 0.3], vec![4.2, 0.5]];
+        let training_inputs = vec![
+            vec![0.8, 0.1],
+            vec![1.2, 0.2],
+            vec![3.8, 0.3],
+            vec![4.2, 0.5],
+        ];
         let training_outputs = vec![3.0, 4.0, -2.0, -2.0];
         let gp = GaussianProcess::default(training_inputs, training_outputs);
 
