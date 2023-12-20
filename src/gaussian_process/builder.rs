@@ -121,11 +121,7 @@ impl<KernelType: Kernel, PriorType: Prior> GaussianProcessBuilder<KernelType, Pr
     /// Sets the noise parameter.
     /// It correspond to the standard deviation of the noise in the outputs of the training set.
     pub fn set_noise(self, noise: f64) -> Self {
-        assert!(
-            noise >= 0.,
-            "The noise parameter should non-negative but we tried to set it to {}",
-            noise
-        );
+        assert!(noise >= 0., "The noise parameter should non-negative but we tried to set it to {}", noise);
         GaussianProcessBuilder { noise, ..self }
     }
 
@@ -161,10 +157,7 @@ impl<KernelType: Kernel, PriorType: Prior> GaussianProcessBuilder<KernelType, Pr
     ///
     /// See <https://github.com/nestordemeure/friedrich/issues/43> for details.
     pub fn set_cholesky_epsilon(self, cholesky_epsilon: Option<f64>) -> Self {
-        GaussianProcessBuilder {
-            cholesky_epsilon,
-            ..self
-        }
+        GaussianProcessBuilder { cholesky_epsilon, ..self }
     }
 
     /// Modifies the stopping criteria of the gradient descent used to fit the noise and kernel parameters.
@@ -172,29 +165,19 @@ impl<KernelType: Kernel, PriorType: Prior> GaussianProcessBuilder<KernelType, Pr
     /// The optimizer runs for a maximum of `max_iter` iterations and stops prematurely if all gradients are below `convergence_fraction` time their associated parameter
     /// or if it runs for more than `max_time`.
     pub fn set_fit_parameters(self, max_iter: usize, convergence_fraction: f64) -> Self {
-        GaussianProcessBuilder {
-            max_iter,
-            convergence_fraction,
-            ..self
-        }
+        GaussianProcessBuilder { max_iter, convergence_fraction, ..self }
     }
 
     /// Asks for the parameters of the kernel to be fitted on the training data.
     /// The fitting will be done when the `train` method is called.
     pub fn fit_kernel(self) -> Self {
-        GaussianProcessBuilder {
-            should_fit_kernel: true,
-            ..self
-        }
+        GaussianProcessBuilder { should_fit_kernel: true, ..self }
     }
 
     /// Asks for the prior to be fitted on the training data.
     /// The fitting will be done when the `train` method is called.
     pub fn fit_prior(self) -> Self {
-        GaussianProcessBuilder {
-            should_fit_prior: true,
-            ..self
-        }
+        GaussianProcessBuilder { should_fit_prior: true, ..self }
     }
 
     //----------------------------------------------------------------------------------------------
@@ -206,8 +189,7 @@ impl<KernelType: Kernel, PriorType: Prior> GaussianProcessBuilder<KernelType, Pr
         // prepare kernel and noise values using heuristics
         // TODO how to detect if values have been entered by the user meaning that he does not want an heuristic ?
         if self.should_fit_kernel {
-            self.kernel
-                .heuristic_fit(&self.training_inputs, &self.training_outputs);
+            self.kernel.heuristic_fit(&self.training_inputs, &self.training_outputs);
         }
 
         // Builds a gp.

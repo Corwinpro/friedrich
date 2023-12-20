@@ -31,8 +31,7 @@ impl<KernelType: Kernel, PriorType: Prior> GaussianProcess<KernelType, PriorType
 
         // Loop over the gradient matrix for each parameter.
         let mut results = vec![];
-        for cov_gradient in
-            make_gradient_covariance_matrices(&self.training_inputs.as_matrix(), &self.kernel)
+        for cov_gradient in make_gradient_covariance_matrices(&self.training_inputs.as_matrix(), &self.kernel)
         {
             // transpose(alpha) * cov_gradient * alpha
             let data_fit: f64 = cov_gradient
@@ -42,11 +41,8 @@ impl<KernelType: Kernel, PriorType: Prior> GaussianProcess<KernelType, PriorType
                 .sum();
 
             // trace(cov_inv * cov_gradient)
-            let complexity_penalty: f64 = cov_inv
-                .row_iter()
-                .zip(cov_gradient.column_iter())
-                .map(|(c, d)| c.tr_dot(&d))
-                .sum();
+            let complexity_penalty: f64 =
+                cov_inv.row_iter().zip(cov_gradient.column_iter()).map(|(c, d)| c.tr_dot(&d)).sum();
 
             results.push((data_fit - complexity_penalty) / 2.);
         }
@@ -108,8 +104,7 @@ impl<KernelType: Kernel, PriorType: Prior> GaussianProcess<KernelType, PriorType
                 var_grad[p] = beta2 * var_grad[p] + (1. - beta2) * gradients[p].powi(2);
                 let bias_corrected_mean = mean_grad[p] / (1. - beta1.powi(i as i32));
                 let bias_corrected_variance = var_grad[p] / (1. - beta2.powi(i as i32));
-                let delta = learning_rate * bias_corrected_mean
-                    / (bias_corrected_variance.sqrt() + epsilon);
+                let delta = learning_rate * bias_corrected_mean / (bias_corrected_variance.sqrt() + epsilon);
                 had_significant_progress |= delta.abs() > convergence_fraction;
                 parameters[p] *= 1. + delta;
             }
@@ -129,9 +124,7 @@ impl<KernelType: Kernel, PriorType: Prior> GaussianProcess<KernelType, PriorType
                 self.cholesky_epsilon,
             );
 
-            if (!had_significant_progress)
-                || (Utc::now().signed_duration_since(time_start) > max_time)
-            {
+            if (!had_significant_progress) || (Utc::now().signed_duration_since(time_start) > max_time) {
                 //println!("Iterations:{}", i);
                 break;
             };
@@ -169,8 +162,7 @@ impl<KernelType: Kernel, PriorType: Prior> GaussianProcess<KernelType, PriorType
 
         // Loop on the gradient matrix for each parameter.
         let mut results = vec![];
-        for cov_gradient in
-            make_gradient_covariance_matrices(&self.training_inputs.as_matrix(), &self.kernel)
+        for cov_gradient in make_gradient_covariance_matrices(&self.training_inputs.as_matrix(), &self.kernel)
         {
             // transpose(alpha) * cov_gradient * alpha / scale
             // NOTE: This quantity is divided by the scale which is not the case for the unscaled gradient.
@@ -182,11 +174,8 @@ impl<KernelType: Kernel, PriorType: Prior> GaussianProcess<KernelType, PriorType
                 / scale;
 
             // trace(cov_inv * cov_gradient)
-            let complexity_penalty: f64 = cov_inv
-                .row_iter()
-                .zip(cov_gradient.column_iter())
-                .map(|(c, d)| c.tr_dot(&d))
-                .sum();
+            let complexity_penalty: f64 =
+                cov_inv.row_iter().zip(cov_gradient.column_iter()).map(|(c, d)| c.tr_dot(&d)).sum();
 
             results.push((data_fit - complexity_penalty) / 2.);
         }
@@ -242,8 +231,7 @@ impl<KernelType: Kernel, PriorType: Prior> GaussianProcess<KernelType, PriorType
                 var_grad[p] = beta2 * var_grad[p] + (1. - beta2) * gradients[p].powi(2);
                 let bias_corrected_mean = mean_grad[p] / (1. - beta1.powi(i as i32));
                 let bias_corrected_variance = var_grad[p] / (1. - beta2.powi(i as i32));
-                let delta = learning_rate * bias_corrected_mean
-                    / (bias_corrected_variance.sqrt() + epsilon);
+                let delta = learning_rate * bias_corrected_mean / (bias_corrected_variance.sqrt() + epsilon);
                 had_significant_progress |= delta.abs() > convergence_fraction;
                 parameters[p] *= 1. + delta;
             }
@@ -262,9 +250,7 @@ impl<KernelType: Kernel, PriorType: Prior> GaussianProcess<KernelType, PriorType
                 self.cholesky_epsilon,
             );
 
-            if (!had_significant_progress)
-                || (Utc::now().signed_duration_since(time_start) > max_time)
-            {
+            if (!had_significant_progress) || (Utc::now().signed_duration_since(time_start) > max_time) {
                 //println!("Iterations:{}", i);
                 break;
             };

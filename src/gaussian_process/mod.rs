@@ -40,8 +40,7 @@
 //! ```
 
 use crate::algebra::{
-    add_rows_cholesky_cov_matrix, make_cholesky_cov_matrix, make_covariance_matrix, EMatrix,
-    EVector,
+    add_rows_cholesky_cov_matrix, make_cholesky_cov_matrix, make_covariance_matrix, EMatrix, EVector,
 };
 use crate::conversion::Input;
 use crate::parameters::{kernel, kernel::Kernel, prior, prior::Prior};
@@ -57,10 +56,7 @@ pub use builder::GaussianProcessBuilder;
 mod optimizer;
 
 /// A Gaussian process that can be used to make predictions based on its training data
-#[cfg_attr(
-    feature = "friedrich_serde",
-    derive(serde::Deserialize, serde::Serialize)
-)]
+#[cfg_attr(feature = "friedrich_serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct GaussianProcess<KernelType: Kernel, PriorType: Prior> {
     /// Value to which the process will regress in the absence of information.
     pub prior: PriorType,
@@ -153,25 +149,16 @@ impl<KernelType: Kernel, PriorType: Prior> GaussianProcess<KernelType, PriorType
         training_inputs: T,
         training_outputs: T::InVector,
     ) -> Self {
-        assert!(
-            noise >= 0.,
-            "The noise parameter should non-negative but we tried to set it to {}",
-            noise
-        );
+        assert!(noise >= 0., "The noise parameter should non-negative but we tried to set it to {}", noise);
         let training_inputs = T::into_dmatrix(training_inputs);
         let training_outputs = T::into_dvector(training_outputs);
         assert_eq!(training_inputs.nrows(), training_outputs.nrows());
         // converts training data into extendable matrix
         let training_inputs = EMatrix::new(training_inputs);
-        let training_outputs =
-            EVector::new(training_outputs - prior.prior(&training_inputs.as_matrix()));
+        let training_outputs = EVector::new(training_outputs - prior.prior(&training_inputs.as_matrix()));
         // computes cholesky decomposition
-        let covmat_cholesky = make_cholesky_cov_matrix(
-            &training_inputs.as_matrix(),
-            &kernel,
-            noise,
-            cholesky_epsilon,
-        );
+        let covmat_cholesky =
+            make_cholesky_cov_matrix(&training_inputs.as_matrix(), &kernel, noise, cholesky_epsilon);
         GaussianProcess {
             prior,
             kernel,
@@ -217,11 +204,7 @@ impl<KernelType: Kernel, PriorType: Prior> GaussianProcess<KernelType, PriorType
         // How well do we fit the training data?
         let output = self.training_outputs.as_vector();
         // transpose(ol)*ol = transpose(output)*cov(train,train)^-1*output
-        let ol = self
-            .covmat_cholesky
-            .l()
-            .solve_lower_triangular(&output)
-            .expect("likelihood : solve failed");
+        let ol = self.covmat_cholesky.l().solve_lower_triangular(&output).expect("likelihood : solve failed");
         let data_fit: f64 = ol.norm_squared();
 
         // penalizes complex models
@@ -252,8 +235,7 @@ impl<KernelType: Kernel, PriorType: Prior> GaussianProcess<KernelType, PriorType
         assert_eq!(inputs.ncols(), self.training_inputs.as_matrix().ncols());
 
         // computes weights to give each training sample
-        let mut weights =
-            make_covariance_matrix(&self.training_inputs.as_matrix(), &inputs, &self.kernel);
+        let mut weights = make_covariance_matrix(&self.training_inputs.as_matrix(), &inputs, &self.kernel);
         self.covmat_cholesky.solve_mut(&mut weights);
 
         // computes prior for the given inputs
@@ -433,12 +415,10 @@ impl<KernelType: Kernel, PriorType: Prior> GaussianProcess<KernelType, PriorType
     ) {
         if fit_prior {
             // Gets the original data back in order to update the prior.
-            let training_outputs = self.training_outputs.as_vector()
-                + self.prior.prior(&self.training_inputs.as_matrix());
-            self.prior
-                .fit(&self.training_inputs.as_matrix(), &training_outputs);
             let training_outputs =
-                training_outputs - self.prior.prior(&self.training_inputs.as_matrix());
+                self.training_outputs.as_vector() + self.prior.prior(&self.training_inputs.as_matrix());
+            self.prior.fit(&self.training_inputs.as_matrix(), &training_outputs);
+            let training_outputs = training_outputs - self.prior.prior(&self.training_inputs.as_matrix());
             self.training_outputs.assign(&training_outputs);
             // NOTE: Adding and subtracting each time we fit a prior might be numerically unwise.
 
